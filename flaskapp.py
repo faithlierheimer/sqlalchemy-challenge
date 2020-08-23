@@ -57,6 +57,14 @@ precip = pd.DataFrame(date, columns=['date', 'precipitation'])
 precip_dict = precip.to_dict('records')
 #print(precip_dict)
 
+#################################
+#Query database to find active stations & list in descending order of activity
+activeStations = session.query(measurement.station, func.count(measurement.station)).group_by(measurement.station).order_by(measurement.station.desc())
+activeStations_df = pd.DataFrame(activeStations, columns=['station', 'count'])
+activeStations_df = activeStations_df.sort_values(by = ['count'], ascending = False)
+##Convert stations df to dictionary
+activeStations_dict = activeStations_df.to_dict('records')
+
 #Flask setup 
 ##Initialize Flask app
 app = Flask(__name__)
@@ -65,19 +73,18 @@ app = Flask(__name__)
 ##Struggling with new lines, /n isn't working???
 def home():
     print("Server received request for homepage.")
-    return "Available routes:\n/api/v1.0/precipitation: Returns JSON version of precipitation data over last 12 months."+ "\n" + "/api/v1.0/stations: Returns JSON version of stations in dataset."
-    return "/api/v1.0/tobs: Returns JSON list of temperature observations for the previous year."
+    return "Available routes:\n/api/v1.0/precipitation: Returns JSON version of precipitation data over last 12 months."+ "\n" + "/api/v1.0/stations: Returns JSON version of stations in dataset. \n/api/v1.0/tobs: Returns JSON list of temperature observations for the previous year."
     return "/api/v1.0/<start>` and `/api/v1.0/<start>/<end> Returns JSON list of min, avg, and max temp for a given start or start-end range. If start only, calculates min, avg, and max for all dates greater than and equal to the start date. When given start andn end date, calculates min, avg, and max for dates between the start and end date inclusive."
 ##This endpoint works as far as I can tell, as of 8/23. 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
     print("Server received request for precipitation page.")
     return jsonify(precip_dict)
-
-# @app.route("/api/v1.0/stations")
-# def stations():
-#     print("Server received request for stations page.")
-#     return jsonify(##Stations dataset##)
+##This endpoint works! as far as I can tell, as of 8/23.
+@app.route("/api/v1.0/stations")
+def stations():
+    print("Server received request for stations page.")
+    return jsonify(activeStations_dict)
 
 # @app.route("/api/v1.0/tobs")
 # def temperature():

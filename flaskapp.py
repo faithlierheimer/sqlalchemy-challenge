@@ -42,31 +42,37 @@ last_date = []
 for l in last:
     last_date.append(l)
 ##Check work
-print(last_date)
+#####print(last_date)
 ##Turn last date into a datetime object
 begin = dt.date(2017, 8, 23)
 ##Find date 12 months before the last date to retrieve last 12 months of precip data & plot results
 year_range = begin - dt.timedelta(days = 365)
 ##Check work
-print(year_range)
-
+######print(year_range)
+##Query database for last 12 mo of precip data
+date = session.query(measurement.date, measurement.prcp).filter(measurement.date >= year_range).all()
+##Put returned query object into a df, drop any duplicates, check work
+precip = pd.DataFrame(date, columns=['date', 'precipitation'])
+##print(precip.head())
+precip_dict = precip.to_dict('records')
+#print(precip_dict)
 
 #Flask setup 
 ##Initialize Flask app
-# app = Flask(__name__)
+app = Flask(__name__)
 
-# @app.route("/")
-# def home():
-#     print("Server received request for homepage.")
-#     return "Available routes:"
-#     return "/api/v1.0/precipitation: Returns JSON version of precipitation data."
-#     return "/api/v1.0/stations: Returns JSON version of stations in dataset."
-#     return "/api/v1.0/tobs: Returns JSON list of temperature observations for the previous year."
-#     return "/api/v1.0/<start>` and `/api/v1.0/<start>/<end> Returns JSON list of min, avg, and max temp for a given start or start-end range. If start only, calculates min, avg, and max for all dates greater than and equal to the start date. When given start andn end date, calculates min, avg, and max for dates between the start and end date inclusive."
-# @app.route("/api/v1.0/precipitation")
-# def precip():
-#     print("Server received request for precipitation page.")
-#     return jsonify(##Query results as dict##)
+@app.route("/")
+##Struggling with new lines, /n isn't working???
+def home():
+    print("Server received request for homepage.")
+    return "Available routes:\n/api/v1.0/precipitation: Returns JSON version of precipitation data over last 12 months."+ "\n" + "/api/v1.0/stations: Returns JSON version of stations in dataset."
+    return "/api/v1.0/tobs: Returns JSON list of temperature observations for the previous year."
+    return "/api/v1.0/<start>` and `/api/v1.0/<start>/<end> Returns JSON list of min, avg, and max temp for a given start or start-end range. If start only, calculates min, avg, and max for all dates greater than and equal to the start date. When given start andn end date, calculates min, avg, and max for dates between the start and end date inclusive."
+##This endpoint works as far as I can tell, as of 8/23. 
+@app.route("/api/v1.0/precipitation")
+def precipitation():
+    print("Server received request for precipitation page.")
+    return jsonify(precip_dict)
 
 # @app.route("/api/v1.0/stations")
 # def stations():
@@ -83,5 +89,5 @@ print(year_range)
 #     print("Server received request for dates page")
 #     return jsonify(##min, avg, max temp of given dates##)
 
-# if __name__ == "__main__":
-#     app.run(debug = True)
+if __name__ == "__main__":
+    app.run(debug = True)

@@ -104,7 +104,7 @@ def datesb():
     return """
         <html><body>
             <h2>Thanks for choosing the date request page!</h2>
-            <form action="api/v1.0/date">
+            <form action="/date">
                 What start date do you want to check the temperature for?<br>
                 Your answer must be in the YYYY-MM-DD format.<br>
                 <input type = 'text' name = 'startdate'><br>
@@ -112,14 +112,22 @@ def datesb():
             </form>
         </body></html>
         """
-@app.route('/api/v1.0/date')
+@app.route("/date")
 def temp_getter():
-    start = request.args.get['date']
-    # temps2 = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).filter(measurement.date >= startdate).all()
-    # temps2_df = pd.DataFrame(temps2, columns = ['date', 'min_temp', 'max_temp', 'avg_temp'])
-    # temps2_dict = temps2_df.to_dict('records')
-    return f"""<html><body><br>
-    <h1>the date you entered is {start}</h1></body></html>"""
+    startdate = request.args['startdate']
+    engine = create_engine("sqlite:///Resources/hawaii.sqlite")
+    Base = automap_base()
+    Base.prepare(engine, reflect = True)
+    Tables = Base.classes.keys()
+    measurement = Base.classes.measurement
+    station = Base.classes.station
+    temps2_list = []
+    session = Session(engine)
+    ###Somehow this is querying the wrong date and querying the same one no matter what i put in. lol. 
+    temps2 = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).filter(measurement.date >= str(startdate)).all()
+    temps2_df = pd.DataFrame(temps2, columns = ['date', 'min_temp', 'max_temp', 'avg_temp'])
+    temps2_dict = temps2_df.to_dict('records')
+    return jsonify(temps2_dict)
     # print("Server received request for start date only page.")
     # start = request.args['start date']
     # end = request.args['end date']

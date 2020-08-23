@@ -1,5 +1,5 @@
 #Import flask
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 #Import dependencies for queries to include in endpoints
 ############################
@@ -76,11 +76,9 @@ temps_dict = temps_df.to_dict('records')
 app = Flask(__name__)
 
 @app.route("/")
-##Struggling with new lines, /n isn't working???
 def home():
     print("Server received request for homepage.")
-    return "Available routes:\n/api/v1.0/precipitation: Returns JSON version of precipitation data over last 12 months."+ "\n" + "/api/v1.0/stations: Returns JSON version of stations in dataset. \n/api/v1.0/tobs: Returns JSON list of temperature observations for the previous year."
-    return "/api/v1.0/<start>` and `/api/v1.0/<start>/<end> Returns JSON list of min, avg, and max temp for a given start or start-end range. If start only, calculates min, avg, and max for all dates greater than and equal to the start date. When given start andn end date, calculates min, avg, and max for dates between the start and end date inclusive."
+    return "Available routes:<br/>/api/v1.0/precipitation: Returns JSON version of precipitation data over last 12 months.<br/> /api/v1.0/stations: Returns JSON version of stations in dataset. <br/> /api/v1.0/tobs: Returns JSON list of temperature observations for the previous year. <br/> /api/v1.0/<start>` and `/api/v1.0/<start>/<end> Returns JSON list of min, avg, and max temp for a given start or start-end range. If start only, calculates min, avg, and max for all dates greater than and equal to the start date. When given start and end date, calculates min, avg, and max for dates between the start and end date inclusive. Dates MUST be in following format YYYY-MM-DD."
 ##This endpoint works as far as I can tell, as of 8/23. 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
@@ -96,11 +94,22 @@ def stations():
 def temperature():
     print("Server received request for temperature page.")
     return jsonify(temps_dict)
-
-# @app.route(#"/api/v1.0/<variable for start date>/<variable for end date>")
-# def dates():
+#@app.route(#"/api/v1.0/<variable for start date>/<variable for end date>")
+#def datesa():
 #     print("Server received request for dates page")
 #     return jsonify(##min, avg, max temp of given dates##)
-
+@app.route("/api/v1.0/<start>")
+@app.route("/api/v1.0/<start>/<end>")
+def datesb(start = None, end = None):
+    print("Server received request for start date only page.")
+    if end != None:
+        temps2 = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
+            filter(measurement.date >= start).filter(measurement.date <= end).all()
+    else:
+        temps2 = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
+            filter(measurement.date >= start).all()
+    temps_df2 = pd.DataFrame(temps2, columns = ['date', 'min_temp', 'max_temp', 'avg_temp'])
+    temps_dict2 = temps_df2.to_dict('records')
+    return jsonify(after_dict)
 if __name__ == "__main__":
     app.run(debug = True)

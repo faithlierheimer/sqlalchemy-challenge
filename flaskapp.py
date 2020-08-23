@@ -98,18 +98,39 @@ def temperature():
 #def datesa():
 #     print("Server received request for dates page")
 #     return jsonify(##min, avg, max temp of given dates##)
-@app.route("/api/v1.0/<start>")
-@app.route("/api/v1.0/<start>/<end>")
-def datesb(start = None, end = None):
-    print("Server received request for start date only page.")
-    if end != None:
-        temps2 = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
-            filter(measurement.date >= start).filter(measurement.date <= end).all()
-    else:
-        temps2 = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
-            filter(measurement.date >= start).all()
-    temps_df2 = pd.DataFrame(temps2, columns = ['date', 'min_temp', 'max_temp', 'avg_temp'])
-    temps_dict2 = temps_df2.to_dict('records')
-    return jsonify(after_dict)
+#@app.route("/api/v1.0/<start>")
+@app.route("/api/v1.0/test")
+def datesb():
+    return """
+        <html><body>
+            <h2>Thanks for choosing the date request page!</h2>
+            <form action="api/v1.0/date">
+                What start date do you want to check the temperature for?<br>
+                Your answer must be in the YYYY-MM-DD format.<br>
+                <input type = 'text' name = 'startdate'><br>
+                <input type = 'submit' value = 'Continue'>
+            </form>
+        </body></html>
+        """
+@app.route('/api/v1.0/date')
+def temp_getter():
+    start = request.args.get['date']
+    # temps2 = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).filter(measurement.date >= startdate).all()
+    # temps2_df = pd.DataFrame(temps2, columns = ['date', 'min_temp', 'max_temp', 'avg_temp'])
+    # temps2_dict = temps2_df.to_dict('records')
+    return f"""<html><body><br>
+    <h1>the date you entered is {start}</h1></body></html>"""
+    # print("Server received request for start date only page.")
+    # start = request.args['start date']
+    # end = request.args['end date']
+    # if (start != None) and (end != None):
+    #     temps2 = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
+    #         filter(measurement.date >= start).filter(measurement.date <= end).all()
+    # elif end != None:
+    #     temps2 = session.query(measurement.date, func.min(measurement.tobs), func.max(measurement.tobs), func.avg(measurement.tobs)).\
+    #     filter(measurement.date >= start).all()
+    # temps_df2 = pd.DataFrame(temps2, columns = ['date', 'min_temp', 'max_temp', 'avg_temp'])
+    # temps_dict2 = temps_df2.to_dict('records')
+    # return jsonify(temps_dict2)
 if __name__ == "__main__":
     app.run(debug = True)

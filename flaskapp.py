@@ -65,6 +65,12 @@ activeStations_df = activeStations_df.sort_values(by = ['count'], ascending = Fa
 ##Convert stations df to dictionary
 activeStations_dict = activeStations_df.to_dict('records')
 
+###################################
+#Query database to find temperature observations for the previous 12 months
+temps = session.query(measurement.date, measurement.tobs).filter(measurement.date >= year_range).all()
+temps_df = pd.DataFrame(temps, columns = ['date', 'temperature'])
+temps_dict = temps_df.to_dict('records')
+
 #Flask setup 
 ##Initialize Flask app
 app = Flask(__name__)
@@ -85,11 +91,11 @@ def precipitation():
 def stations():
     print("Server received request for stations page.")
     return jsonify(activeStations_dict)
-
-# @app.route("/api/v1.0/tobs")
-# def temperature():
-#     print("Server received request for temperature page.")
-#     return jsonify(##json list of temp observations for previous year##)
+##This endpoint works! as far as I can tell, as of 8/23
+@app.route("/api/v1.0/tobs")
+def temperature():
+    print("Server received request for temperature page.")
+    return jsonify(temps_dict)
 
 # @app.route(#"/api/v1.0/<variable for start date>/<variable for end date>")
 # def dates():

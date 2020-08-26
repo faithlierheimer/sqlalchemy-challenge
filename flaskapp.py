@@ -78,12 +78,20 @@ app = Flask(__name__)
 @app.route("/")
 def home():
     print("Server received request for homepage.")
-    return "Available routes:<br/>/api/v1.0/precipitation: Returns JSON version of precipitation data over last 12 months.<br/> /api/v1.0/stations: Returns JSON version of stations in dataset. <br/> /api/v1.0/tobs: Returns JSON list of temperature observations for the previous year. <br/> /api/v1.0/start` and `/api/v1.0/start/end Returns JSON list of min, avg, and max temp for a given start or start-end range. If start only, calculates min, avg, and max for all dates greater than and equal to the start date. When given start and end date, calculates min, avg, and max for dates between the start and end date inclusive. Dates MUST be in following format YYYYMMDD."
+    return """Available routes:<br/>
+    <a href=/api/v1.0/precipitation>Precipitation</a>: Returns JSON version of precipitation data over last 12 months.<br/> 
+    <a href=/api/v1.0/stations>Stations</a>: Returns JSON version of stations in dataset. <br/> 
+    <a href=/api/v1.0/tobs>Temperature</a>: Returns JSON list of temperature observations for the previous year. <br/> 
+    <a href=/api/v1.0/start>Start Date</a>: and <br/>
+    <a href=/api/v1.0/start/end>End Date</a>: Returns JSON list of min, avg, and max temp for a given start or start-end range. <br/>
+    If start only, calculates min, avg, and max for all dates greater than and equal to the start date. <br/>
+    When given start and end date, calculates min, avg, and max for dates between the start and end date inclusive. Dates MUST be in following format YYYYMMDD."""
 ##This endpoint works as far as I can tell, as of 8/23. 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
     print("Server received request for precipitation page.")
     return jsonify(precip_dict)
+    ##Put session stuff inside relevant fxns then do session.close() after that
 ##This endpoint works! as far as I can tell, as of 8/23.
 @app.route("/api/v1.0/stations")
 def stations():
@@ -95,10 +103,6 @@ def temperature():
     print("Server received request for temperature page.")
     return jsonify(temps_dict)
 #@app.route(#"/api/v1.0/<variable for start date>/<variable for end date>")
-#def datesa():
-#     print("Server received request for dates page")
-#     return jsonify(##min, avg, max temp of given dates##)
-#@app.route("/api/v1.0/<start>")
 @app.route("/api/v1.0/start")
 def datesa():
     return """
